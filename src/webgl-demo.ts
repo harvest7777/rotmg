@@ -4,9 +4,10 @@ main();
 // start here
 //
 function main() {
-  const canvas = document.querySelector("#gl-canvas");
+  const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
+
   // Initialize the GL context
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl2");
 
   // Only continue if WebGL is available and working
   if (gl === null) {
