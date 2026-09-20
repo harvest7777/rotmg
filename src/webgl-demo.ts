@@ -1,6 +1,17 @@
 import fragment from "./shaders/fragment.glsl?raw";
 import vertex from "./shaders/vertex.glsl?raw";
 
+const PLAYER_SIZE = 32;
+
+const QUAD_VERTICES = [
+  -0.5, -0.5,
+  0.5, -0.5,
+  -0.5, 0.5,
+  -0.5, 0.5,
+  0.5, -0.5,
+  0.5, 0.5,
+];
+
 main();
 
 //
@@ -35,7 +46,6 @@ function createShader(gl, type, source) {
 
 function main() {
   const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
-
   // Initialize the GL context
   const gl = canvas.getContext("webgl2");
 
@@ -47,46 +57,32 @@ function main() {
     return;
   }
 
-  // // Set clear color to black, fully opaque
-  // gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  // // Clear the color buffer with specified clear color
-  // gl.clear(gl.COLOR_BUFFER_BIT);
+  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertex);
+  const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragment);
+  const program = createProgram(gl, vertexShader, fragmentShader);
 
-  var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertex);
-  var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragment);
-  var program = createProgram(gl, vertexShader, fragmentShader);
-  var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  var positionBuffer = gl.createBuffer();
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
+  const positionUniformLocation = gl.getUniformLocation(program, "u_position");
+  const sizeUniformLocation = gl.getUniformLocation(program, "u_size");
+
+  const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  // three 2d points
-  var positions = [
-    0, 0,
-    0, 0.5,
-    0.7, 0,
-  ];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-  var vao = gl.createVertexArray();
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QUAD_VERTICES), gl.STATIC_DRAW);
+
+  const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
   gl.enableVertexAttribArray(positionAttributeLocation);
-  var size = 2;          // 2 components per iteration
-  var type = gl.FLOAT;   // the data is 32bit floats
-  var normalize = false; // don't normalize the data
-  var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-  var offset = 0;        // start at the beginning of the buffer
-  gl.vertexAttribPointer(
-    positionAttributeLocation, size, type, normalize, stride, offset)
-  canvas.width = 400;
-  canvas.height = 300;
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  // Clear the canvas
+  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  // Tell it to use our program (pair of shaders)
+
   gl.useProgram(program);
-  // Bind the attribute/buffer set we want.
   gl.bindVertexArray(vao);
-  var primitiveType = gl.TRIANGLES;
-  var offset = 0;
-  var count = 3;
-  gl.drawArrays(primitiveType, offset, count);
+  gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
+  gl.uniform2f(sizeUniformLocation, PLAYER_SIZE, PLAYER_SIZE);
+  gl.uniform2f(positionUniformLocation, canvas.width / 2, canvas.height / 2);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
