@@ -1,3 +1,4 @@
+import { createDebug, updateDebug } from "./debug.ts";
 import { createInput, isActive } from "./input.ts";
 import { createRenderer, render } from "./renderer.ts";
 import type { Input, Player } from "./types.ts";
@@ -28,6 +29,7 @@ function main() {
   const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
   const renderer = createRenderer(canvas);
   const input = createInput();
+  const debug = createDebug();
   const player: Player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
@@ -39,7 +41,10 @@ function main() {
   let accumulator = 0;
 
   const frame = (now: number) => {
-    accumulator += Math.min((now - previousTime) / 1000, MAX_FRAME_SECONDS);
+    const intervalMs = now - previousTime;
+    const workStartMs = performance.now();
+
+    accumulator += Math.min(intervalMs / 1000, MAX_FRAME_SECONDS);
     previousTime = now;
 
     while (accumulator >= STEP_SECONDS) {
@@ -48,6 +53,8 @@ function main() {
     }
 
     render(renderer, player, accumulator / STEP_SECONDS);
+
+    updateDebug(debug, intervalMs, performance.now() - workStartMs);
     requestAnimationFrame(frame);
   };
 
