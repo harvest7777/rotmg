@@ -1,7 +1,11 @@
 import fragment from "./shaders/fragment.glsl?raw";
 import vertex from "./shaders/vertex.glsl?raw";
+import type { Input, Player } from "./types.ts";
 
 const PLAYER_SIZE = 32;
+const PLAYER_SPEED = 240;
+const STEP_SECONDS = 1 / 60;
+const MAX_FRAME_SECONDS = 0.25;
 
 const QUAD_VERTICES = [
   -0.5, -0.5,
@@ -44,6 +48,28 @@ function createShader(gl, type, source) {
   gl.deleteShader(shader);
 }
 
+function createInput(): Input {
+  const input: Input = { held: new Set<string>() };
+  window.addEventListener("keydown", (event) => input.held.add(event.code));
+  window.addEventListener("keyup", (event) => input.held.delete(event.code));
+  return input;
+}
+
+function updatePlayer(player: Player, input: Input, dt: number) {
+  let dx = 0;
+  let dy = 0;
+  if (input.held.has("KeyW")) dy -= 1;
+  if (input.held.has("KeyS")) dy += 1;
+  if (input.held.has("KeyA")) dx -= 1;
+  if (input.held.has("KeyD")) dx += 1;
+
+  const length = Math.hypot(dx, dy) || 1;
+  player.dx = (dx / length) * PLAYER_SPEED;
+  player.dy = (dy / length) * PLAYER_SPEED;
+  player.x += player.dx * dt;
+  player.y += player.dy * dt;
+}
+
 function main() {
   const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
   // Initialize the GL context
@@ -83,6 +109,32 @@ function main() {
   gl.bindVertexArray(vao);
   gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
   gl.uniform2f(sizeUniformLocation, PLAYER_SIZE, PLAYER_SIZE);
-  gl.uniform2f(positionUniformLocation, canvas.width / 2, canvas.height / 2);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  const input = createInput();
+  const player: Player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    dx: 0,
+    dy: 0,
+  };
+
+  let previousTime = performance.now();
+  let accumulator = 0;
+
+  const frame = (now: number) => {
+    accumulator += Math.min((now - previousTime) / 1000, MAX_FRAME_SECONDS);
+    previousTime = now;
+
+    while (accumulator >= STEP_SECONDS) {
+      updatePlayer(player, input, STEP_SECONDS);
+      accumulator -= STEP_SECONDS;
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(positionUniformLocation, player.x, player.y);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(frame);
+  };
+
+  requestAnimationFrame(frame);
 }
