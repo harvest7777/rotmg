@@ -23,30 +23,46 @@ main();
 // start here
 //
 
-function createProgram(gl, vertexShader, fragmentShader) {
-  var program = gl.createProgram();
+function createProgram(
+  gl: WebGL2RenderingContext,
+  vertexShader: WebGLShader,
+  fragmentShader: WebGLShader,
+): WebGLProgram {
+  const program = gl.createProgram();
+  if (program === null) {
+    throw new Error("createProgram failed");
+  }
+
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
   gl.linkProgram(program);
-  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
+  if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     return program;
   }
 
-  console.log(gl.getProgramInfoLog(program));
+  const log = gl.getProgramInfoLog(program);
   gl.deleteProgram(program);
+  throw new Error(`program link failed: ${log}`);
 }
-function createShader(gl, type, source) {
-  var shader = gl.createShader(type);
+function createShader(
+  gl: WebGL2RenderingContext,
+  type: GLenum,
+  source: string,
+): WebGLShader {
+  const shader = gl.createShader(type);
+  if (shader === null) {
+    throw new Error("createShader failed");
+  }
+
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
-  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {
+  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
   }
 
-  console.log(gl.getShaderInfoLog(shader));
+  const log = gl.getShaderInfoLog(shader);
   gl.deleteShader(shader);
+  throw new Error(`shader compile failed: ${log}`);
 }
 
 function updatePlayer(player: Player, input: Input, dt: number) {
