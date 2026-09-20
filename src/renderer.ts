@@ -61,19 +61,6 @@ function createProgram(
   throw new Error(`program link failed: ${log}`);
 }
 
-function getUniformLocation(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  name: string,
-): WebGLUniformLocation {
-  const location = gl.getUniformLocation(program, name);
-  if (location === null) {
-    throw new Error(`missing uniform ${name}`);
-  }
-
-  return location;
-}
-
 export function createRenderer(canvas: HTMLCanvasElement): Renderer {
   const gl = canvas.getContext("webgl2");
   if (gl === null) {
@@ -88,9 +75,18 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
   const program = createProgram(gl, vertexShader, fragmentShader);
 
   const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  const resolutionUniformLocation = getUniformLocation(gl, program, "u_resolution");
-  const positionUniformLocation = getUniformLocation(gl, program, "u_position");
-  const sizeUniformLocation = getUniformLocation(gl, program, "u_size");
+  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
+  const positionUniformLocation = gl.getUniformLocation(program, "u_position");
+  const sizeUniformLocation = gl.getUniformLocation(program, "u_size");
+
+  if (
+    positionAttributeLocation === -1 ||
+    resolutionUniformLocation === null ||
+    positionUniformLocation === null ||
+    sizeUniformLocation === null
+  ) {
+    throw new Error("shader is missing an expected attribute or uniform");
+  }
 
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
