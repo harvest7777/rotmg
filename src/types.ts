@@ -1,8 +1,6 @@
 export type Player = {
   x: number;
   y: number;
-  dx: number;
-  dy: number;
 };
 
 export type Action = "moveUp" | "moveDown" | "moveLeft" | "moveRight";

@@ -58,10 +58,8 @@ function updatePlayer(player: Player, input: Input, dt: number) {
   if (isActive(input, "moveRight")) dx += 1;
 
   const length = Math.hypot(dx, dy) || 1;
-  player.dx = (dx / length) * PLAYER_SPEED;
-  player.dy = (dy / length) * PLAYER_SPEED;
-  player.x += player.dx * dt;
-  player.y += player.dy * dt;
+  player.x += (dx / length) * PLAYER_SPEED * dt;
+  player.y += (dy / length) * PLAYER_SPEED * dt;
 }
 
 function main() {
@@ -105,12 +103,7 @@ function main() {
   gl.uniform2f(sizeUniformLocation, PLAYER_SIZE, PLAYER_SIZE);
 
   const input = createInput();
-  const player: Player = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    dx: 0,
-    dy: 0,
-  };
+  const player: Player = { x: canvas.width / 2, y: canvas.height / 2 };
 
   let previousTime = performance.now();
   let accumulator = 0;
