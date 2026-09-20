@@ -9,6 +9,9 @@ const MAX_FRAME_SECONDS = 0.25;
 main();
 
 function updatePlayer(player: Player, input: Input, dt: number) {
+  player.prevX = player.x;
+  player.prevY = player.y;
+
   let dx = 0;
   let dy = 0;
   if (isActive(input, "moveUp")) dy -= 1;
@@ -25,7 +28,12 @@ function main() {
   const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
   const renderer = createRenderer(canvas);
   const input = createInput();
-  const player: Player = { x: canvas.width / 2, y: canvas.height / 2 };
+  const player: Player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    prevX: canvas.width / 2,
+    prevY: canvas.height / 2,
+  };
 
   let previousTime = performance.now();
   let accumulator = 0;
@@ -39,7 +47,7 @@ function main() {
       accumulator -= STEP_SECONDS;
     }
 
-    render(renderer, player);
+    render(renderer, player, accumulator / STEP_SECONDS);
     requestAnimationFrame(frame);
   };
 

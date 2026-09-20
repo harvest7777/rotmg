@@ -108,10 +108,12 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
   return { gl, positionUniformLocation };
 }
 
-export function render(renderer: Renderer, player: Player) {
+export function render(renderer: Renderer, player: Player, alpha: number) {
   const { gl, positionUniformLocation } = renderer;
+  const x = player.prevX + (player.x - player.prevX) * alpha;
+  const y = player.prevY + (player.y - player.prevY) * alpha;
 
   gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.uniform2f(positionUniformLocation, player.x, player.y);
+  gl.uniform2f(positionUniformLocation, x, y);
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
