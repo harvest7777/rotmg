@@ -1,10 +1,10 @@
 import type { Action, Input } from "./types.ts";
 
 const DEFAULT_BINDINGS: Record<Action, string[]> = {
-  moveUp: ["KeyW", "ArrowUp"],
-  moveDown: ["KeyS", "ArrowDown"],
-  moveLeft: ["KeyA", "ArrowLeft"],
-  moveRight: ["KeyD", "ArrowRight"],
+  moveUp: ["KeyW"],
+  moveDown: ["KeyS"],
+  moveLeft: ["KeyA"],
+  moveRight: ["KeyD"],
 };
 
 export function createInput(): Input {
