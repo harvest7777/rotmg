@@ -1,6 +1,7 @@
 import fragment from "./shaders/fragment.glsl?raw";
 import vertex from "./shaders/vertex.glsl?raw";
 import type { Input, Player } from "./types.ts";
+import { createInput, isActive } from "./input.ts";
 
 const PLAYER_SIZE = 32;
 const PLAYER_SPEED = 240;
@@ -48,20 +49,13 @@ function createShader(gl, type, source) {
   gl.deleteShader(shader);
 }
 
-function createInput(): Input {
-  const input: Input = { held: new Set<string>() };
-  window.addEventListener("keydown", (event) => input.held.add(event.code));
-  window.addEventListener("keyup", (event) => input.held.delete(event.code));
-  return input;
-}
-
 function updatePlayer(player: Player, input: Input, dt: number) {
   let dx = 0;
   let dy = 0;
-  if (input.held.has("KeyW")) dy -= 1;
-  if (input.held.has("KeyS")) dy += 1;
-  if (input.held.has("KeyA")) dx -= 1;
-  if (input.held.has("KeyD")) dx += 1;
+  if (isActive(input, "moveUp")) dy -= 1;
+  if (isActive(input, "moveDown")) dy += 1;
+  if (isActive(input, "moveLeft")) dx -= 1;
+  if (isActive(input, "moveRight")) dx += 1;
 
   const length = Math.hypot(dx, dy) || 1;
   player.dx = (dx / length) * PLAYER_SPEED;
