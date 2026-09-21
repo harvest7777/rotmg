@@ -70,7 +70,7 @@ export function createRenderer(
   canvas: HTMLCanvasElement,
   spritesheet: Spritesheet,
 ): Renderer {
-  const gl = canvas.getContext("webgl2");
+  const gl = canvas.getContext("webgl2", { antialias: false });
   if (gl === null) {
     alert(
       "Unable to initialize WebGL. Your browser or machine may not support it.",
