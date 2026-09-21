@@ -1,10 +1,11 @@
 import fragment from "./shaders/fragment.glsl?raw";
 import vertex from "./shaders/vertex.glsl?raw";
 import type { Player } from "./types.ts";
-import { SPRITE_SIZE, type Spritesheet } from "./sprites.ts";
+import { SPRITE_SIZE, characterFrame, type Spritesheet } from "./sprites.ts";
 
 const SPRITE_SCALE = 6;
-const INSTANCE_FLOATS = 4;
+const INSTANCE_FLOATS = 5;
+const INSTANCE_STRIDE = INSTANCE_FLOATS * 4;
 const SPRITE_DRAW_SIZE = SPRITE_SIZE * SPRITE_SCALE;
 
 const QUAD_VERTICES = [
@@ -84,6 +85,7 @@ export function createRenderer(
 
   const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   const instanceAttributeLocation = gl.getAttribLocation(program, "a_instance");
+  const flipAttributeLocation = gl.getAttribLocation(program, "a_flip");
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
   const sizeUniformLocation = gl.getUniformLocation(program, "u_size");
   const uvSizeUniformLocation = gl.getUniformLocation(program, "u_uvSize");
@@ -92,6 +94,7 @@ export function createRenderer(
   if (
     positionAttributeLocation === -1 ||
     instanceAttributeLocation === -1 ||
+    flipAttributeLocation === -1 ||
     resolutionUniformLocation === null ||
     sizeUniformLocation === null ||
     uvSizeUniformLocation === null ||
@@ -118,8 +121,11 @@ export function createRenderer(
   gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, instanceData.byteLength, gl.DYNAMIC_DRAW);
   gl.enableVertexAttribArray(instanceAttributeLocation);
-  gl.vertexAttribPointer(instanceAttributeLocation, 4, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(instanceAttributeLocation, 4, gl.FLOAT, false, INSTANCE_STRIDE, 0);
   gl.vertexAttribDivisor(instanceAttributeLocation, 1);
+  gl.enableVertexAttribArray(flipAttributeLocation);
+  gl.vertexAttribPointer(flipAttributeLocation, 1, gl.FLOAT, false, INSTANCE_STRIDE, 16);
+  gl.vertexAttribDivisor(flipAttributeLocation, 1);
 
   const texture = gl.createTexture();
   if (texture === null) {
@@ -156,10 +162,13 @@ export function createRenderer(
 export function render(renderer: Renderer, player: Player, alpha: number) {
   const { gl, instanceBuffer, instanceData, spritesheet } = renderer;
 
+  const frame = characterFrame(spritesheet, player);
+
   instanceData[0] = player.prevX + (player.x - player.prevX) * alpha;
   instanceData[1] = player.prevY + (player.y - player.prevY) * alpha;
-  instanceData[2] = player.spriteColumn * spritesheet.uvWidth;
-  instanceData[3] = player.spriteRow * spritesheet.uvHeight;
+  instanceData[2] = frame.column * spritesheet.uvWidth;
+  instanceData[3] = frame.row * spritesheet.uvHeight;
+  instanceData[4] = frame.mirrored ? -1 : 1;
 
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);

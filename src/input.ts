@@ -5,6 +5,7 @@ const DEFAULT_BINDINGS: Record<Action, string[]> = {
   moveDown: ["KeyS"],
   moveLeft: ["KeyA"],
   moveRight: ["KeyD"],
+  shoot: ["Space"],
 };
 
 export function createInput(): Input {
