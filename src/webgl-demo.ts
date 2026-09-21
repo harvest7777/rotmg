@@ -1,13 +1,14 @@
 import { createDebug, updateDebug } from "./debug.ts";
 import { createInput, isActive } from "./input.ts";
 import { createRenderer, render } from "./renderer.ts";
+import { loadSpritesheet } from "./sprites.ts";
 import type { Input, Player } from "./types.ts";
 
 const PLAYER_SPEED = 240;
 const STEP_SECONDS = 1 / 60;
 const MAX_FRAME_SECONDS = 0.25;
 
-main();
+await main();
 
 function updatePlayer(player: Player, input: Input, dt: number) {
   player.prevX = player.x;
@@ -25,9 +26,10 @@ function updatePlayer(player: Player, input: Input, dt: number) {
   player.y += (dy / length) * PLAYER_SPEED * dt;
 }
 
-function main() {
+async function main() {
+  const spritesheet = await loadSpritesheet();
   const canvas = document.querySelector("#gl-canvas") as HTMLCanvasElement;
-  const renderer = createRenderer(canvas);
+  const renderer = createRenderer(canvas, spritesheet);
   const input = createInput();
   const debug = createDebug();
   const player: Player = {
@@ -35,6 +37,8 @@ function main() {
     y: canvas.height / 2,
     prevX: canvas.width / 2,
     prevY: canvas.height / 2,
+    spriteColumn: 0,
+    spriteRow: 0,
   };
 
   let previousTime = performance.now();

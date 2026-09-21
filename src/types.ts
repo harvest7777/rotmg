@@ -3,6 +3,8 @@ export type Player = {
   y: number;
   prevX: number;
   prevY: number;
+  spriteColumn: number;
+  spriteRow: number;
 };
 
 export type Action = "moveUp" | "moveDown" | "moveLeft" | "moveRight";
